@@ -30,7 +30,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/admin");
+    if (res.ok) router.push("/admin");
+
   }
 
   return (
