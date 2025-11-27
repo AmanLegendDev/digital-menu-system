@@ -15,45 +15,72 @@ export default function OrderReviewPage() {
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
-  async function placeOrder() {
-  if (!table) {
-    alert("Please enter table number!");
-    return;
-  }
+  // ---------------------------
+  // 🎵 SOUND PLAYER
+  // ---------------------------
+function playDingSound() {
+  const audio = new Audio("/sounds/order-ding.mp3");
+  audio.volume = 1;
 
-  const orderData = {
-    items: cart,
-    totalQty,
-    totalPrice,
-    table,
-    note,
-    createdAt: new Date(),
-  };
+  audio.play().catch((e) => {
+    console.log("Sound blocked, retrying...");
 
-  // SAVE TO DB
-  const res = await fetch("/api/orders", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(orderData),
+    // Fallback retry
+    const retry = new Audio("/sounds/order-ding.mp3");
+    retry.volume = 1;
+    retry.play().catch(() => {});
   });
-
-  const data = await res.json();
-
-  if (data.success) {
-    // SAVE TO LOCAL STORAGE FOR SUCCESS PAGE
-    localStorage.setItem("latestOrder", JSON.stringify(orderData));
-
-    router.push("/order-success");
-  } else {
-    alert("Order failed. Try again!");
-  }
 }
 
 
+
+  // ---------------------------
+  // 🛎 PLACE ORDER
+  // ---------------------------
+  async function placeOrder() {
+    if (!table) {
+      alert("Please enter table number!");
+      return;
+    }
+
+    const orderData = {
+      items: cart,
+      totalQty,
+      totalPrice,
+      table,
+      note,
+      createdAt: new Date(),
+    };
+
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      const finalOrder = { ...orderData, _id: data.order._id };
+      localStorage.setItem("latestOrder", JSON.stringify(finalOrder));
+
+      // ---------------------------
+      // 📳 VIBRATION + SOUND
+      // ---------------------------
+      if (navigator.vibrate) {
+        navigator.vibrate([120, 60, 120]); // smooth double buzz
+      }
+
+      playDingSound();
+
+      router.push("/order-success");
+    } else {
+      alert("Order failed. Try again!");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f8f8] px-4 py-6 pb-28 text-black">
-
-      {/* PAGE TITLE */}
       <h1 className="text-3xl font-extrabold text-[#111] tracking-tight">
         Review Your Order
       </h1>
@@ -62,14 +89,11 @@ export default function OrderReviewPage() {
         Please confirm your items before placing the order.
       </p>
 
-      {/* SUBTITLE */}
-      <h2 className="text-lg font-semibold mt-2 mb-2">
-        Order Summary
-      </h2>
+      <h2 className="text-lg font-semibold mt-2 mb-2">Order Summary</h2>
 
       <div className="h-[1px] bg-gray-300/60 mb-4" />
 
-      {/* ORDER ITEMS GRID */}
+      {/* ITEMS GRID */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {cart.map((item) => (
           <div
@@ -96,18 +120,16 @@ export default function OrderReviewPage() {
         ))}
       </div>
 
-      {/* FORM SECTION */}
       <h2 className="text-lg font-semibold mt-8 mb-2">Your Details</h2>
       <div className="h-[1px] bg-gray-300/60 mb-4" />
 
-      {/* ERROR UI */}
       {error && (
         <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm mb-3">
           {error}
         </div>
       )}
 
-      {/* TABLE NUMBER INPUT */}
+      {/* TABLE INPUT */}
       <div className="mb-5">
         <label className="font-semibold text-sm block mb-1">
           Table Number <span className="text-red-500">*</span>
@@ -125,21 +147,16 @@ export default function OrderReviewPage() {
       </div>
 
       {/* NOTE INPUT */}
-      <div className="">
-        <label className="font-semibold text-sm block mb-1">
-          Note (Optional)
-        </label>
-        <textarea
-          placeholder="Any instructions? (extra cheese, less spicy...)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="w-full p-3 rounded-lg border bg-white shadow-sm min-h-[90px] focus:ring-2 focus:ring-[#ff6a3d] outline-none transition"
-        />
-      </div>
+      <label className="font-semibold text-sm block mb-1">Note (Optional)</label>
+      <textarea
+        placeholder="Any instructions? (extra cheese, less spicy...)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        className="w-full p-3 rounded-lg border bg-white shadow-sm min-h-[90px] focus:ring-2 focus:ring-[#ff6a3d] outline-none transition"
+      />
 
-      {/* STICKY FOOTER */}
+      {/* FOOTER */}
       <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur shadow-[0_-2px_12px_rgba(0,0,0,0.15)] py-4 px-5 border-t flex justify-between items-center z-50">
-
         <p className="font-semibold text-[16px]">
           {totalQty} items • ₹{totalPrice}
         </p>
@@ -150,7 +167,6 @@ export default function OrderReviewPage() {
         >
           Place Order
         </button>
-
       </div>
     </div>
   );

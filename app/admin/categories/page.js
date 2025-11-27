@@ -6,21 +6,28 @@ export default function CategoriesPage() {
   const [name, setName] = useState("");
   const [categories, setCategories] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // ------------------------ FETCH ALL CATEGORIES ------------------------
+  // LOAD
   async function loadCategories() {
-    const res = await fetch("/api/categories");
+    const res = await fetch("/api/categories", { cache: "no-store" });
     const data = await res.json();
-    setCategories(data);
+
+    const sorted = [...data].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    setCategories(sorted);
   }
 
   useEffect(() => {
     loadCategories();
   }, []);
 
-  // ------------------------ ADD OR UPDATE CATEGORY ------------------------
+  // ADD / UPDATE
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!name.trim()) return;
 
     if (editId) {
       await fetch("/api/categories", {
@@ -36,66 +43,87 @@ export default function CategoriesPage() {
     }
 
     setName("");
-    loadCategories();
+    await loadCategories();
   }
 
-  // ------------------------ DELETE CATEGORY ------------------------
+  // DELETE
   async function deleteCategory(id) {
     await fetch("/api/categories", {
       method: "DELETE",
       body: JSON.stringify({ id }),
     });
 
-    loadCategories();
+    setConfirmDelete(null);
+    await loadCategories();
   }
 
-  // ------------------------ ENABLE EDIT MODE ------------------------
+  // EDIT
   function startEdit(cat) {
     setEditId(cat._id);
     setName(cat.name);
   }
 
   return (
-    <div>
+    <div className="py-4 px-2 sm:px-6 text-white">
       <h1 className="text-3xl font-bold mb-6">Categories</h1>
 
-      {/* ADD / EDIT CATEGORY FORM */}
-      <form onSubmit={handleSubmit} className="flex gap-3 mb-8">
+      {/* FORM */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3 mb-8"
+      >
         <input
           type="text"
           placeholder="Category name..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-[#111] border border-[#333] rounded px-4 py-2"
+          className="bg-[#111] border border-[#333] rounded px-4 py-2 flex-1 text-white"
         />
-        <button className="bg-blue-600 px-4 py-2 rounded" type="submit">
+
+        <button
+          type="submit"
+          className="bg-[#ff6a3d] hover:brightness-110 transition px-6 py-2 rounded font-semibold"
+        >
           {editId ? "Update" : "Add"}
         </button>
       </form>
 
-      {/* LIST OF CATEGORIES */}
-      <div className="space-y-3">
+      {/* GRID CARDS */}
+      <div
+        className="
+          grid 
+          grid-cols-2 
+          sm:grid-cols-3 
+          md:grid-cols-4 
+          lg:grid-cols-5 
+          gap-4
+        "
+      >
         {categories.map((cat) => (
           <div
             key={cat._id}
-            className="flex justify-between items-center bg-[#111] px-4 py-3 rounded border border-[#333]"
+            className={`bg-[#111] border ${
+              editId === cat._id ? "border-[#ff6a3d]" : "border-[#333]"
+            } rounded-xl p-4 shadow hover:shadow-xl hover:border-[#ff6a3d] transition relative`}
           >
-            <div>
-              <p className="text-lg">{cat.name}</p>
-              <p className="text-gray-500 text-sm">/{cat.slug}</p>
-            </div>
+            {/* NAME */}
+            <p className="text-lg font-bold text-white">{cat.name}</p>
 
-            <div className="flex gap-3">
+            {/* SLUG */}
+            <p className="text-sm text-gray-500 mb-4">/{cat.slug}</p>
+
+            {/* ACTION BUTTONS */}
+            <div className="absolute right-3 bottom-3 flex gap-3">
               <button
                 onClick={() => startEdit(cat)}
-                className="text-yellow-400"
+                className="text-yellow-400 hover:text-yellow-200 text-sm"
               >
                 Edit
               </button>
 
               <button
-                onClick={() => deleteCategory(cat._id)}
-                className="text-red-500"
+                onClick={() => setConfirmDelete(cat)}
+                className="text-red-500 hover:text-red-300 text-sm"
               >
                 Delete
               </button>
@@ -103,6 +131,38 @@ export default function CategoriesPage() {
           </div>
         ))}
       </div>
+
+      {/* DELETE CONFIRM MODAL */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#111] w-[90%] max-w-sm rounded-xl border border-gray-700 p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-red-400 mb-4">
+              Delete Category?
+            </h2>
+
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{confirmDelete.name}</span>?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => deleteCategory(confirmDelete._id)}
+                className="flex-1 bg-red-600 py-2 rounded-lg text-white font-semibold"
+              >
+                Delete
+              </button>
+
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 bg-gray-700 py-2 rounded-lg text-white font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

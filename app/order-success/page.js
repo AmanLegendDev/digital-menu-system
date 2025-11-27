@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 
 import { useEffect, useState } from "react";
 
@@ -27,9 +28,32 @@ export default function OrderSuccessPage() {
 
       {/* Success Badge */}
       <div className="text-center">
-        <div className="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto text-4xl font-bold">
-          ✓
-        </div>
+        <motion.div
+  initial={{ scale: 0, rotate: -180, opacity: 0 }}
+  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+  transition={{
+    duration: 0.8,
+    ease: "backOut"
+  }}
+  whileHover={{
+    scale: 1.1,
+    boxShadow: "0 0 15px rgba(34,197,94,0.6)",
+    transition: { duration: 0.3 }
+  }}
+  className="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto text-4xl font-bold shadow-lg"
+>
+  <motion.span
+    animate={{ rotate: [0, 20, -20, 0] }}
+    transition={{
+      duration: 1.5,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }}
+  >
+    ✓
+  </motion.span>
+</motion.div>
+
 
         <h1 className="text-3xl font-bold mt-4">Order Placed!</h1>
         <p className="text-gray-600 mt-2">
@@ -64,14 +88,14 @@ export default function OrderSuccessPage() {
 
         {/* TOTAL */}
         <div className="flex justify-between text-lg font-bold">
-          <p>Total</p>
+          <p>Total Bill</p>
           <p>₹{order.totalPrice}</p>
         </div>
 
         {/* TABLE NUMBER */}
-        <div className="mt-4 bg-gray-100 p-3 rounded-lg text-center">
-          <p className="font-semibold text-gray-700">
-            Table Number: <span className="text-[#ff6a3d]">{order.table}</span>
+        <div className="mt-4 bg-gray-300 p-3 rounded-lg text-center">
+          <p className="font-semibold text-black">
+            Table Number: <span className="text-[#c9512d] font-bold text-xl">{order.table}</span>
           </p>
         </div>
 
@@ -85,7 +109,7 @@ export default function OrderSuccessPage() {
       <div className="mt-10 text-center">
         <button
           onClick={() => window.location.href = "/menu"}
-          className="bg-[#ff6a3d] text-white px-8 py-3 rounded-full text-lg font-semibold"
+          className="bg-[#e05023] text-white px-8 py-3 rounded-full text-lg font-semibold"
         >
           Back to Menu
         </button>
