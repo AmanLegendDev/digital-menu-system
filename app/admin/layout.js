@@ -1,5 +1,5 @@
 "use client";
-
+import { useEffect } from "react";
 import { useState } from "react";
 import { redirect, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -16,14 +16,31 @@ import {
   ListOrdered
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation"; 
+
 
 export default function AdminLayout({ children }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
 
-  if (status === "loading") return null;
-  if (!session || session.user.role !== "admin") redirect("/login");
+ 
+useEffect(() => {
+  if (status === "loading") return;
+
+  if (!session || session.user.role !== "admin") {
+    router.replace("/login"); 
+  }
+}, [session, status]);
+
+if (status === "loading") return null;
+
+if (!session || session.user.role !== "admin") {
+  return null;
+}
+
+
 
   // ⭐ FINAL SIDEBAR ROUTES
   const links = [

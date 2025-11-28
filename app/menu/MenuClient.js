@@ -221,7 +221,10 @@ export default function MenuClient({ categories, items }) {
           </p>
           <button
             className="bg-[#ff6a3d] text-white px-6 py-2 rounded-full font-semibold"
-            onClick={() => router.push("/order-review")}
+            onClick={() => 
+              {router.push("/order-review")
+                router.refresh
+              }}
           >
             process
           </button>
