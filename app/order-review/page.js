@@ -2,41 +2,53 @@
 
 import { useCart } from "@/app/context/CartContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function OrderReviewPage() {
   const { cart } = useCart();
   const router = useRouter();
 
-  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
-  const totalPrice = cart.reduce((s, i) => s + i.qty * i.price, 0);
-
+  const [savedCart, setSavedCart] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [table, setTable] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
-  // ---------------------------
-  // 🎵 SOUND PLAYER
-  // ---------------------------
-function playDingSound() {
-  const audio = new Audio("/sounds/order-ding.mp3");
-  audio.volume = 1;
+  // ---------------------------------------
+  // 🔥 RESTORE CART FROM LOCALSTORAGE ON REFRESH
+  // ---------------------------------------
+  useEffect(() => {
+    const stored = localStorage.getItem("cart_data");
+    if (stored) {
+      try {
+        setSavedCart(JSON.parse(stored));
+      } catch (e) {
+        console.log("Restore failed:", e);
+      }
+    }
 
-  audio.play().catch((e) => {
-    console.log("Sound blocked, retrying...");
+    // ⭐ give CartContext 1 frame to load
+    setTimeout(() => setLoading(false), 50);
+  }, []);
 
-    // Fallback retry
-    const retry = new Audio("/sounds/order-ding.mp3");
-    retry.volume = 1;
-    retry.play().catch(() => {});
-  });
-}
+  // ⛔ Stop UI while restoring
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading your order…
+      </div>
+    );
+  }
 
+  // 🟢 Use cart if non-empty, otherwise fallback to savedCart
+  const finalCart = cart.length > 0 ? cart : savedCart;
 
+  const totalQty = finalCart.reduce((s, i) => s + i.qty, 0);
+  const totalPrice = finalCart.reduce((s, i) => s + i.qty * i.price, 0);
 
-  // ---------------------------
+  // ---------------------------------------
   // 🛎 PLACE ORDER
-  // ---------------------------
+  // ---------------------------------------
   async function placeOrder() {
     if (!table) {
       alert("Please enter table number!");
@@ -44,7 +56,7 @@ function playDingSound() {
     }
 
     const orderData = {
-      items: cart,
+      items: finalCart,
       totalQty,
       totalPrice,
       table,
@@ -64,16 +76,12 @@ function playDingSound() {
       const finalOrder = { ...orderData, _id: data.order._id };
       localStorage.setItem("latestOrder", JSON.stringify(finalOrder));
 
-      // ---------------------------
-      // 📳 VIBRATION + SOUND
-      // ---------------------------
       if (navigator.vibrate) {
-        navigator.vibrate([120, 60, 120]); // smooth double buzz
+        navigator.vibrate([120, 60, 120]);
       }
 
-      playDingSound();
+     router.replace("/order-success");
 
-      router.push("/order-success");
     } else {
       alert("Order failed. Try again!");
     }
@@ -90,12 +98,11 @@ function playDingSound() {
       </p>
 
       <h2 className="text-lg font-semibold mt-2 mb-2">Order Summary</h2>
-
       <div className="h-[1px] bg-gray-300/60 mb-4" />
 
       {/* ITEMS GRID */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {cart.map((item) => (
+        {finalCart.map((item) => (
           <div
             key={item._id}
             className="bg-white rounded-xl shadow-sm border hover:shadow-md transition p-3 flex flex-col"

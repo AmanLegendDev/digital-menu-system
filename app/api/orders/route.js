@@ -2,16 +2,26 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Orders from "@/models/Orders";
 
+
+export const dynamic = "force-dynamic";
+export const revalidate = false;
+
+
 export async function GET() {
   try {
     await connectDB();
-    const orders = await Orders.find().sort({ createdAt: -1 });
+
+    const orders = await Orders.find()
+      .sort({ createdAt: -1 })
+      .lean();  // 🔥 SUPER IMPORTANT
+
     return NextResponse.json({ success: true, orders });
   } catch (err) {
     console.log("GET Orders Error:", err);
     return NextResponse.json({ success: false, orders: [] });
   }
 }
+
 
 export async function POST(req) {
   try {

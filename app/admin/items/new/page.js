@@ -18,7 +18,7 @@ export default function NewItemPage() {
   }, []);
 
   async function loadCategories() {
-    const res = await fetch("/api/categories");
+    const res = await fetch("/api/categories", { cache: "no-store" });
     const data = await res.json();
     setCategories(data);
   }

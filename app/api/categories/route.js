@@ -3,6 +3,10 @@ import Category from "@/models/Category";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
 
+export const dynamic = "force-dynamic";
+export const revalidate = false;
+
+
 
 export async function  POST(req){
     try{

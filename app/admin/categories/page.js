@@ -21,8 +21,15 @@ export default function CategoriesPage() {
   }
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+  loadCategories(); // initial
+
+  const interval = setInterval(() => {
+    loadCategories(); // auto-refresh every 2 sec
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, []);
+
 
   // ADD / UPDATE
   async function handleSubmit(e) {

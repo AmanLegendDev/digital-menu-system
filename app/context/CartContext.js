@@ -65,7 +65,7 @@ export function CartProvider({ children }) {
     setCart((prev) =>
       prev
         .map((item) =>
-          item._id === id && item.qty > 1
+          item._id === id && item.qty > 0
             ? { ...item, qty: item.qty - 1 }
             : item
         )

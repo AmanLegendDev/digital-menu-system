@@ -3,6 +3,10 @@ import MenuItems from "@/models/MenuItems";
 import cloudinary from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = false;
+
+
 export async function GET(req, { params }) {
   await connectDB();
   const item = await MenuItems.findById(params.id).populate("category");

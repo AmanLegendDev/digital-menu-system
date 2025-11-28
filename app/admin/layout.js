@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -11,28 +11,27 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
-  MenuIcon,
   HomeIcon,
-  ListOrdered,
+  MenuIcon,
+  ListOrdered
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export default function AdminLayout({ children }) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (status === "loading") return null;
   if (!session || session.user.role !== "admin") redirect("/login");
 
-  // Sidebar links config
+  // ⭐ FINAL SIDEBAR ROUTES
   const links = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    {name: "Orders", href: "/admin/orders" , icon: ListOrdered},
+    { name: "Orders", href: "/admin/orders", icon: ListOrdered },
     { name: "Categories", href: "/admin/categories", icon: List },
     { name: "Menu Items", href: "/admin/items", icon: PlusSquare },
-    { name: "Client Menu", href: "/menu", icon: MenuIcon },
-    {name: "Home", href: "/" , icon: HomeIcon},
+    { name: "Home", href: "/", icon: HomeIcon },
   ];
 
   return (
@@ -54,7 +53,7 @@ export default function AdminLayout({ children }) {
           md:translate-x-0
         `}
       >
-        {/* Close (mobile) */}
+        {/* Close Button - Mobile */}
         <button
           onClick={() => setSidebarOpen(false)}
           className="md:hidden text-white mb-6 flex justify-end"
@@ -62,32 +61,44 @@ export default function AdminLayout({ children }) {
           <X size={28} />
         </button>
 
-        {/* Logo */}
-        <h1 className="text-xl font-bold mb-10 tracking-wide">Digital Menu</h1>
+        {/* LOGO */}
+        <h1 className="text-xl font-bold mb-10 tracking-wide">
+          Digital Menu Admin
+        </h1>
 
         {/* LINKS */}
         <div className="space-y-2 flex-1">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-3 p-2 rounded text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition"
-            >
-              <link.icon size={20} />
-              {link.name}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isActive = pathname === link.href;
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-3 p-2 rounded-lg transition
+                  ${isActive
+                    ? "bg-[#1a1a1a] text-white font-semibold border border-[#ff6a3d]"
+                    : "text-gray-300 hover:bg-[#1a1a1a] hover:text-white"
+                  }
+                `}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <link.icon size={20} />
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* LOGOUT */}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-600/20 text-gray-300 hover:text-white transition"
+          className="flex items-center gap-3 p-2 rounded-lg hover:bg-red-600/20 text-gray-300 hover:text-white transition"
         >
           <LogOut size={20} /> Logout
         </button>
 
-        {/* EMAIL FOR MOBILE */}
+        {/* EMAIL - Mobile */}
         <p className="text-gray-500 text-xs mt-4 block md:hidden">
           {session?.user?.email}
         </p>
@@ -96,11 +107,10 @@ export default function AdminLayout({ children }) {
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 min-h-screen md:ml-64">
 
-        {/* STICKY TOPBAR */}
-        <div className="h-16 bg-[#0f0f0f]/80 backdrop-blur border-b border-[#1e1e1e] 
+        {/* TOP NAV */}
+        <div className="h-16 bg-[#0f0f0f]/80 backdrop-blur border-b border-[#1e1e1e]
           flex items-center justify-between px-6 sticky top-0 z-20 shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
         >
-          {/* Hamburger (mobile) */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="md:hidden text-white"
@@ -108,12 +118,11 @@ export default function AdminLayout({ children }) {
             <Menu size={30} />
           </button>
 
-          {/* Title */}
           <h2 className="text-lg font-semibold tracking-wide">Admin Panel</h2>
 
-          {/* Email (desktop only) */}
+          {/* Email Desktop */}
           <p className="text-gray-400 text-sm hidden md:block">
-            {session.user.email}
+            {session?.user?.email}
           </p>
         </div>
 

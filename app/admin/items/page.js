@@ -13,7 +13,8 @@ export default function AdminMenuItemsPage() {
   }, []);
 
   async function loadItems() {
-    const res = await fetch("/api/items");
+    const res = await fetch("/api/items", { cache: "no-store" });
+
     const data = await res.json();
 
     if (!Array.isArray(data)) return setItems([]);
@@ -26,6 +27,13 @@ export default function AdminMenuItemsPage() {
 
     setItems(sorted);
   }
+
+  useEffect(() => {
+  loadItems();
+  const interval = setInterval(loadItems, 2000);
+  return () => clearInterval(interval);
+}, []);
+
 
   async function deleteItem() {
     await fetch(`/api/items/${deleteId}`, {

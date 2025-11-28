@@ -4,7 +4,7 @@ const OrderSchema = new mongoose.Schema(
   {
     items: [
       {
-        _id: String,        // item ID
+        _id: String,
         name: String,
         price: Number,
         qty: Number,
@@ -30,8 +30,15 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "preparing", "ready", "served"],
       default: "pending",
     },
+
+    // ⭐ NEW FIELD TO HANDLE REALTIME NEW BADGE
+    seenByAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
+export default mongoose.models.Order ||
+  mongoose.model("Order", OrderSchema);
