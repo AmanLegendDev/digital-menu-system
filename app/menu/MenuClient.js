@@ -43,10 +43,12 @@ export default function MenuClient({ categories, items, activeCategoryId }) {
   useEffect(() => {
  async function reloadMenu() {
   try {
-    const resItems = await fetch("/api/items", { cache: "no-store" });
-    const freshItems = await resItems.json();
+   const resItems = await fetch("/api/items");
+const freshItems = await resItems.json();
+setLiveItems(freshItems);
 
-    setLiveItems(freshItems);
+
+   
     // ❌ Categories NOT reloaded
   } catch (err) {
     console.log("Realtime menu fetch error:", err);
@@ -56,7 +58,7 @@ export default function MenuClient({ categories, items, activeCategoryId }) {
 
     reloadMenu(); // initial load
 
-    const interval = setInterval(reloadMenu, 3000); // 3 sec realtime update
+    const interval = setInterval(reloadMenu, 10000); 
     return () => clearInterval(interval);
   }, []);
 

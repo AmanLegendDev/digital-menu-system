@@ -77,7 +77,7 @@ function clearCart() {
   setCart([]);
 
   if (typeof window !== "undefined") {
-    localStorage.removeItem("cart_data");   // your main key
+   
     localStorage.removeItem("cartItems");   // 🔥 second key phone/Vercel uses
   }
 }
