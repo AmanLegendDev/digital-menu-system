@@ -45,6 +45,16 @@ export default function MenuClient({ categories, items, activeCategoryId }) {
     (cat) => String(cat._id) === String(activeCat)
   );
 
+
+  // restore scroll after mount
+useEffect(() => {
+  const saved = sessionStorage.getItem("tabsScroll");
+  if (saved && tabsRef.current) {
+    tabsRef.current.scrollLeft = Number(saved);
+  }
+}, [activeCategoryId]);
+
+
   return (
     <div className="min-h-screen bg-[#f8f8f8] px-5 py-8 pb-24">
 
@@ -58,17 +68,13 @@ export default function MenuClient({ categories, items, activeCategoryId }) {
         {liveCategories.map((cat) => (
           <motion.button
             key={cat._id}
-            onClick={() => {
-              const savedScroll = tabsRef.current?.scrollLeft;
+           onClick={() => {
+  const savedScroll = tabsRef.current?.scrollLeft || 0;
+  sessionStorage.setItem("tabsScroll", savedScroll);
 
-              router.push(`/menu/${String(cat._id)}`);
+  router.push(`/menu/${String(cat._id)}`);
+}}
 
-              setTimeout(() => {
-                if (tabsRef.current) {
-                  tabsRef.current.scrollLeft = savedScroll;
-                }
-              }, 10);
-            }}
             whileTap={{ scale: 0.9 }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition
               ${
