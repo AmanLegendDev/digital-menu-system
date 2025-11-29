@@ -20,6 +20,16 @@ export default function MenuClient({ categories, items, activeCategoryId }) {
 
   const activeCat = activeCategoryId || categories[0]?._id;
 
+  const getCategoryCount = (catId) => {
+  return cart
+    .filter((item) => 
+      String(item.category) === String(catId) ||
+      String(item.category?._id) === String(catId)
+    )
+    .reduce((sum, item) => sum + item.qty, 0);
+};
+
+
   // Load last order
   useEffect(() => {
     const saved = localStorage.getItem("latestOrder");
@@ -83,7 +93,7 @@ useEffect(() => {
                   : "bg-white text-[#333] border border-gray-300"
               }`}
           >
-            {cat.name}
+            {cat.name} {getCategoryCount(cat._id) > 0 && `(${getCategoryCount(cat._id)})`}
           </motion.button>
         ))}
       </div>
@@ -108,7 +118,8 @@ useEffect(() => {
         {visibleCategories.map((cat) => (
           <section key={cat._id}>
             <h2 className="text-3xl font-bold text-[#111] mb-5">
-              {cat.name}
+              {cat.name} {getCategoryCount(cat._id) > 0 && `(${getCategoryCount(cat._id)})`}
+
             </h2>
 
             <motion.div
