@@ -2,8 +2,10 @@
 import { motion } from "framer-motion";
 
 import { useEffect, useState } from "react";
+import { useCart } from "../context/CartContext";
 
 export default function OrderSuccessPage() {
+  const { clearCart } = useCart();
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
@@ -107,12 +109,15 @@ export default function OrderSuccessPage() {
 
       {/* BUTTON */}
       <div className="mt-10 text-center">
-        <button
-          onClick={() => window.location.href = "/menu"}
-          className="bg-[#e05023] text-white px-8 py-3 rounded-full text-lg font-semibold"
-        >
-          Back to Menu
-        </button>
+       <button
+  onClick={() => {
+    clearCart();                 // 🔥 LOCALSTORAGE + STATE dono reset
+    window.location.href = "/menu";
+  }}
+  className="bg-[#e05023] text-white px-8 py-3 rounded-full text-lg font-semibold"
+>
+  Back to Menu
+</button>
       </div>
     </div>
   );
